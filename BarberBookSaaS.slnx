@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="BarberBookSaaS.Application/BarberBookSaaS.Application.csproj" />
+  <Project Path="BarberBookSaaS.Domain/BarberBookSaaS.Domain.csproj" />
+  <Project Path="BarberBookSaaS.Infrastructure/BarberBookSaaS.Infrastructure.csproj" />
+  <Project Path="BarberBookSaaS.Tests/BarberBookSaaS.Tests.csproj" />
+  <Project Path="BarberBookSaaS.WebApi/BarberBookSaaS.WebApi.csproj" />
+</Solution>

@@ -1,0 +1,56 @@
+## Carpetas de compilación de .NET
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+.vs/
+.vscode/
+
+## Archivos de configuración con secretos
+appsettings.Development.json
+**/appsettings.Development.json
+
+## Archivos de compilación
+*.dll
+*.pdb
+*.exe
+*.cache
+*.sourcelink.json
+
+## Base de datos SQLite de desarrollo
+*.db
+*.db-shm
+*.db-wal
+
+## NuGet
+*.nupkg
+packages/
+.nuget/
+
+## Frontend
+BarberBookSaaS.Web/node_modules/
+BarberBookSaaS.Web/dist/
+BarberBookSaaS.Web/dist-ssr/
+
+## Herramientas internas
+.playwright-mcp/
+/.claude/
+/.clone/
+/.superpowers/
+/_hashgen/
+/*.png
+
+## Logs de desarrollo
+*.log
+backend*.log
+
+## Fotos de prueba
+*.jpeg
+*.jpg
+test_*.jpg
+maicolprueba.*
+test_face.*
+
+## Excepción: assets reales del sitio servidos desde public/
+!BarberBookSaaS.Web/public/*.jpg
+!BarberBookSaaS.Web/public/*.jpeg

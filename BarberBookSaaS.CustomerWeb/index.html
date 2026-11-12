@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BarberBook — Reserva tu cita</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f0f0f;
+      color: #e5e5e5;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo { font-size: 1.4rem; font-weight: 700; color: #D4AF37; letter-spacing: -0.5px; }
+    .logo span { color: #e5e5e5; }
+
+    #user-bar { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+    #user-bar .loyalty { color: #D4AF37; }
+
+    main { max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 { font-size: 1rem; font-weight: 600; color: #D4AF37; margin-bottom: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    label { display: block; font-size: 0.85rem; color: #9a9a9a; margin-bottom: 0.3rem; margin-top: 0.8rem; }
+    label:first-of-type { margin-top: 0; }
+
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e5e5e5;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: #D4AF37; }
+
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.4rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #D4AF37; color: #0f0f0f; }
+    .btn-ghost { background: transparent; border: 1px solid #444; color: #e5e5e5; }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+    .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .tab { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #333; background: transparent; color: #9a9a9a; cursor: pointer; font-size: 0.88rem; transition: all 0.2s; }
+    .tab.active { background: #D4AF37; color: #0f0f0f; border-color: #D4AF37; font-weight: 600; }
+
+    .slots { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .slot { padding: 0.4rem 0.8rem; border-radius: 5px; border: 1px solid #333; background: #111; color: #e5e5e5; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .slot:hover:not(:disabled) { border-color: #D4AF37; color: #D4AF37; }
+    .slot.selected { background: #D4AF37; color: #0f0f0f; border-color: #D4AF37; font-weight: 600; }
+    .slot:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .appointment-card {
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+      background: #111;
+    }
+    .appointment-card .meta { font-size: 0.82rem; color: #6a6a6a; margin-top: 0.3rem; }
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-Pendiente { background: #1c3a5e; color: #93c5fd; }
+    .status-Completada { background: #14532d; color: #86efac; }
+    .status-Cancelada { background: #3b0f0f; color: #fca5a5; }
+
+    .msg { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.88rem; margin-top: 1rem; }
+    .msg-ok { background: #14532d; color: #86efac; border: 1px solid #166534; }
+    .msg-err { background: #3b0f0f; color: #fca5a5; border: 1px solid #7f1d1d; }
+
+    .loyalty-bar-wrap { margin-top: 1rem; }
+    .loyalty-bar-bg { background: #2a2a2a; border-radius: 999px; height: 8px; margin-top: 0.4rem; overflow: hidden; }
+    .loyalty-bar-fill { background: #D4AF37; height: 100%; border-radius: 999px; transition: width 0.4s; }
+
+    .row { display: flex; gap: 0.8rem; align-items: flex-end; }
+    .row > * { flex: 1; }
+
+    .hidden { display: none !important; }
+
+    .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; padding: 0.4rem 0; border-bottom: 1px solid #1f1f1f; }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .label { color: #6a6a6a; }
+
+    .section-divider { border: none; border-top: 1px solid #2a2a2a; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Barber<span>Book</span></div>
+  <div id="user-bar" class="hidden">
+    <span id="user-name"></span>
+    <span class="loyalty" id="user-loyalty"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. SELECCIONAR BARBERÍA -->
+  <div class="card" id="section-barberia">
+    <h2>¿En qué barbería querés reservar?</h2>
+    <label>Subdominio de la barbería</label>
+    <div class="row" style="margin-top:0.3rem">
+      <input type="text" id="input-subdomain" placeholder="ej: elegant" />
+      <button class="btn btn-primary" style="flex:0 0 auto" onclick="loadBarberia()">Entrar</button>
+    </div>
+    <div id="msg-barberia"></div>
+  </div>
+
+  <!-- 2. AUTH -->
+  <div class="card hidden" id="section-auth">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="tab" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <!-- Login -->
+    <div id="tab-login">
+      <label>Teléfono</label>
+      <input type="tel" id="login-phone" placeholder="5551234567" />
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="login()">Entrar</button>
+      </div>
+      <div id="msg-login"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="tab-register" class="hidden">
+      <label>Nombre completo</label>
+      <input type="text" id="reg-name" placeholder="Juan García" />
+      <label>Teléfono</label>
+      <input type="tel" id="reg-phone" placeholder="5551234567" />
+      <label>Contraseña</label>
+      <input type="password" id="reg-password" placeholder="••••••••" />
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="register()">Crear cuenta</button>
+      </div>
+      <div id="msg-register"></div>
+    </div>
+  </div>
+
+  <!-- 3. AGENDAR CITA -->
+  <div class="card hidden" id="section-booking">
+    <h2>Agendar cita</h2>
+
+    <label>Barbero</label>
+    <select id="select-barber" onchange="loadSlots()">
+      <option value="">— Seleccioná un barbero —</option>
+    </select>
+
+    <label>Servicio</label>
+    <select id="select-service" onchange="loadSlots()">
+      <option value="">— Seleccioná un servicio —</option>
+    </select>
+
+    <label>Fecha</label>
+    <input type="date" id="input-date" onchange="loadSlots()" />
+
+    <label>Horario disponible</label>
+    <div id="slots-container">
+      <span style="color:#6a6a6a;font-size:0.85rem">Seleccioná barbero, servicio y fecha para ver los horarios.</span>
+    </div>
+
+    <div style="margin-top:1.2rem">
+      <button class="btn btn-primary" onclick="bookAppointment()" id="btn-book" disabled>Confirmar cita</button>
+    </div>
+    <div id="msg-booking"></div>
+  </div>
+
+  <!-- 4. MIS CITAS -->
+  <div class="card hidden" id="section-appointments">
+    <h2>Mis citas</h2>
+    <div id="appointments-list">
+      <span style="color:#6a6a6a;font-size:0.85rem">No tienes citas registradas.</span>
+    </div>
+  </div>
+
+  <!-- 5. MI PERFIL -->
+  <div class="card hidden" id="section-profile">
+    <h2>Mi perfil</h2>
+    <div id="profile-info"></div>
+
+    <div class="loyalty-bar-wrap" id="loyalty-wrap">
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+        <span style="color:#9a9a9a">Fidelización</span>
+        <span id="loyalty-label" style="color:#D4AF37"></span>
+      </div>
+      <div class="loyalty-bar-bg">
+        <div class="loyalty-bar-fill" id="loyalty-bar" style="width:0%"></div>
+      </div>
+      <div style="font-size:0.78rem;color:#6a6a6a;margin-top:0.4rem" id="loyalty-hint"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const API = 'http://localhost:5299';
+
+  let state = {
+    subdomain: '',
+    token: null,
+    customer: null,
+    barbers: [],
+    services: [],
+    selectedSlot: null,
+    appointments: [],
+  };
+
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+  function msg(id, text, ok = true) {
+    const el = document.getElementById(id);
+    el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
+    el.textContent = text;
+  }
+  function clearMsg(id) { const el = document.getElementById(id); el.className = ''; el.textContent = ''; }
+
+  async function api(method, path, body, token) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (state.subdomain) headers['X-Tenant-Id'] = state.subdomain;
+
+    const res = await fetch(API + path, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch {}
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function today() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // ─── Barbería ────────────────────────────────────────────────────────────────
+
+  async function loadBarberia() {
+    const sub = document.getElementById('input-subdomain').value.trim().toLowerCase();
+    if (!sub) return;
+    state.subdomain = sub;
+    clearMsg('msg-barberia');
+
+    const [barbers, services] = await Promise.all([
+      api('GET', `/api/public/${sub}/barbers`),
+      api('GET', `/api/public/${sub}/services`),
+    ]);
+
+    if (!barbers.ok) {
+      msg('msg-barberia', 'Barbería no encontrada. Verificá el subdominio.', false);
+      state.subdomain = '';
+      return;
+    }
+
+    state.barbers = barbers.data || [];
+    state.services = services.data || [];
+
+    populateSelect('select-barber', state.barbers, b => ({ value: b.id, label: b.name + (b.specialty ? ` — ${b.specialty}` : '') }));
+    populateSelect('select-service', state.services, s => ({ value: s.id, label: `${s.name} (${s.durationMinutes} min — $${s.price})` }));
+
+    document.getElementById('input-date').min = today();
+
+    show('section-auth');
+    document.getElementById('section-barberia').querySelector('h2').textContent =
+      `Barbería: ${sub}`;
+    document.getElementById('input-subdomain').disabled = true;
+  }
+
+  function populateSelect(id, items, mapper) {
+    const sel = document.getElementById(id);
+    const first = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(first);
+    items.forEach(item => {
+      const { value, label } = mapper(item);
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ─── Auth ────────────────────────────────────────────────────────────────────
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'login' ? 0 : 1) === i));
+    if (tab === 'login') { show('tab-login'); hide('tab-register'); }
+    else { hide('tab-login'); show('tab-register'); }
+  }
+
+  async function login() {
+    const phone = document.getElementById('login-phone').value.trim();
+    const password = document.getElementById('login-password').value;
+    clearMsg('msg-login');
+    const res = await api('POST', `/api/public/${state.subdomain}/auth/login`, { phone, password });
+    if (!res.ok) { msg('msg-login', 'Teléfono o contraseña incorrectos.', false); return; }
+    await onAuthenticated(res.data);
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const password = document.getElementById('reg-password').value;
+    clearMsg('msg-register');
+    if (!name || !phone || !password) { msg('msg-register', 'Completá todos los campos.', false); return; }
+    const res = await api('POST', `/api/public/${state.subdomain}/auth/register`, { name, phone, password });
+    if (!res.ok) { msg('msg-register', 'El teléfono ya está registrado o hubo un error.', false); return; }
+    await onAuthenticated(res.data);
+  }
+
+  async function onAuthenticated(data) {
+    state.token = data.token;
+    state.customer = data;
+    hide('section-auth');
+    await loadProfile();
+    show('section-booking');
+    show('section-appointments');
+    show('section-profile');
+    updateUserBar();
+    await loadMyAppointments();
+  }
+
+  function logout() {
+    state = { subdomain: state.subdomain, token: null, customer: null, barbers: state.barbers, services: state.services, selectedSlot: null, appointments: [] };
+    hide('section-booking');
+    hide('section-appointments');
+    hide('section-profile');
+    hide('user-bar');
+    show('section-auth');
+    document.getElementById('login-phone').value = '';
+    document.getElementById('login-password').value = '';
+    clearMsg('msg-login');
+  }
+
+  function updateUserBar() {
+    const c = state.customer;
+    if (!c) return;
+    show('user-bar');
+    document.getElementById('user-name').textContent = c.name || '';
+    const count = c.loyaltyCount ?? 0;
+    document.getElementById('user-loyalty').textContent = count > 0 ? `⭐ ${count} pts` : '';
+  }
+
+  // ─── Perfil ───────────────────────────────────────────────────────────────────
+
+  async function loadProfile() {
+    const res = await api('GET', '/api/customer/me', null, state.token);
+    if (!res.ok) return;
+    const p = res.data;
+    state.customer = { ...state.customer, ...p };
+
+    const info = document.getElementById('profile-info');
+    info.innerHTML = `
+      <div class="info-row"><span class="label">Nombre</span><span>${p.name}</span></div>
+      <div class="info-row"><span class="label">Teléfono</span><span>${p.phone}</span></div>
+    `;
+
+    if (p.loyaltyEnabled) {
+      const pct = Math.min(100, Math.round((p.loyaltyCount / p.loyaltyThreshold) * 100));
+      document.getElementById('loyalty-label').textContent = `${p.loyaltyCount} / ${p.loyaltyThreshold} citas`;
+      document.getElementById('loyalty-bar').style.width = pct + '%';
+      document.getElementById('loyalty-hint').textContent =
+        p.loyaltyCount >= p.loyaltyThreshold
+          ? '¡Tu próxima cita es GRATIS!'
+          : `Te faltan ${p.loyaltyThreshold - p.loyaltyCount} cita(s) para una gratis.`;
+      show('loyalty-wrap');
+    } else {
+      hide('loyalty-wrap');
+    }
+
+    updateUserBar();
+  }
+
+  // ─── Disponibilidad ───────────────────────────────────────────────────────────
+
+  async function loadSlots() {
+    state.selectedSlot = null;
+    document.getElementById('btn-book').disabled = true;
+    const barberId = document.getElementById('select-barber').value;
+    const serviceId = document.getElementById('select-service').value;
+    const date = document.getElementById('input-date').value;
+    const container = document.getElementById('slots-container');
+
+    if (!barberId || !serviceId || !date) {
+      container.innerHTML = '<span style="color:#6a6a6a;font-size:0.85rem">Seleccioná barbero, servicio y fecha para ver los horarios.</span>';
+      return;
+    }
+
+    container.innerHTML = '<span style="color:#6a6a6a;font-size:0.85rem">Cargando...</span>';
+    const res = await api('GET', `/api/public/${state.subdomain}/availability?barberId=${barberId}&serviceId=${serviceId}&date=${date}`);
+
+    if (!res.ok || !res.data?.length) {
+      container.innerHTML = '<span style="color:#6a6a6a;font-size:0.85rem">No hay horarios disponibles para esta fecha.</span>';
+      return;
+    }
+
+    container.innerHTML = '';
+    const slots = document.createElement('div');
+    slots.className = 'slots';
+    res.data.forEach(slot => {
+      const btn = document.createElement('button');
+      btn.className = 'slot';
+      btn.textContent = slot.time;
+      btn.disabled = !slot.available;
+      btn.onclick = () => selectSlot(btn, slot.time, date);
+      slots.appendChild(btn);
+    });
+    container.appendChild(slots);
+  }
+
+  function selectSlot(btn, time, date) {
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.selectedSlot = `${date}T${time}:00`;
+    document.getElementById('btn-book').disabled = false;
+  }
+
+  // ─── Booking ──────────────────────────────────────────────────────────────────
+
+  async function bookAppointment() {
+    const barberId = document.getElementById('select-barber').value;
+    const serviceId = document.getElementById('select-service').value;
+    clearMsg('msg-booking');
+
+    if (!barberId || !serviceId || !state.selectedSlot) {
+      msg('msg-booking', 'Completá todos los campos.', false);
+      return;
+    }
+
+    const res = await api('POST', `/api/public/${state.subdomain}/appointments`, {
+      barberId,
+      serviceId,
+      appointmentDate: state.selectedSlot,
+    }, state.token);
+
+    if (!res.ok) {
+      msg('msg-booking', res.data?.message || 'No se pudo agendar. Intentá con otro horario.', false);
+      return;
+    }
+
+    const d = res.data;
+    const barber = state.barbers.find(b => b.id === barberId);
+    const service = state.services.find(s => s.id === serviceId);
+    const isFree = d.isFree ? ' 🎉 ¡Esta cita es GRATIS!' : '';
+
+    msg('msg-booking', `Cita confirmada para el ${formatDate(state.selectedSlot)} con ${barber?.name || 'el barbero'} — ${service?.name || 'servicio'}.${isFree}`, true);
+
+    state.appointments.unshift({
+      id: d.appointmentId,
+      barberId,
+      serviceId,
+      appointmentDate: state.selectedSlot,
+      status: d.status || 'Pendiente',
+      barberName: barber?.name,
+      serviceName: service?.name,
+      isFree: d.isFree,
+    });
+
+    renderAppointments();
+    await loadProfile();
+
+    // reset form
+    state.selectedSlot = null;
+    document.getElementById('select-barber').value = '';
+    document.getElementById('select-service').value = '';
+    document.getElementById('input-date').value = '';
+    document.getElementById('slots-container').innerHTML = '<span style="color:#6a6a6a;font-size:0.85rem">Seleccioná barbero, servicio y fecha para ver los horarios.</span>';
+    document.getElementById('btn-book').disabled = true;
+  }
+
+  // ─── Mis Citas ────────────────────────────────────────────────────────────────
+
+  async function loadMyAppointments() {
+    // Note: no existe endpoint GET /api/customer/appointments todavía.
+    // Los appointments se acumulan en memoria durante la sesión.
+    // Fase 5.2: agregar GET /api/public/{subdomain}/my-appointments para clientes autenticados.
+    renderAppointments();
+  }
+
+  function renderAppointments() {
+    const list = document.getElementById('appointments-list');
+    if (!state.appointments.length) {
+      list.innerHTML = '<span style="color:#6a6a6a;font-size:0.85rem">No tienes citas registradas en esta sesión.</span>';
+      return;
+    }
+    list.innerHTML = state.appointments.map(a => `
+      <div class="appointment-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>${a.barberName || 'Barbero'} — ${a.serviceName || 'Servicio'}</strong>
+          <span class="status-badge status-${a.status}">${a.status}</span>
+        </div>
+        <div class="meta">${formatDate(a.appointmentDate)}${a.isFree ? ' &nbsp;🎉 GRATIS' : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────────
+
+  document.getElementById('input-date').min = today();
+</script>
+
+</body>
+</html>

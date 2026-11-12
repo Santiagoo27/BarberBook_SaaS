@@ -1,0 +1,1004 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--color-bg, #0a0a0a);
+  color: var(--color-text, #f5f5f5);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 4px; height: 4px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: var(--color-border, #2a2a2a); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted, #888); }
+
+/* ── Skeleton shimmer ──────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    color-mix(in srgb, var(--color-border) 55%, var(--color-surface)) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Fade-in ────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-transition { animation: pageIn 200ms ease both; }
+
+/* ── Live status pulse ─────────────────────────────────── */
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6), 0 0 7px rgba(16,185,129,0.7); }
+  50%       { box-shadow: 0 0 0 4px rgba(16,185,129,0), 0 0 12px rgba(16,185,129,0.4); }
+}
+.pulse-dot { animation: pulseDot 2.8s ease-in-out infinite; }
+
+@keyframes pathFlow {
+  from { stroke-dashoffset: 2000; }
+  to   { stroke-dashoffset: 0; }
+}
+.landing-path-anim {
+  animation: pathFlow var(--duration, 20s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-path-anim { animation: none; }
+}
+
+/* ── Diagnosis logo responsive ────────────────────────── */
+.diagnosis-logo { width: 80px; height: 80px; }
+@media (max-width: 1024px) { .diagnosis-logo { width: 56px; height: 56px; } }
+@media (max-width: 640px)  { .diagnosis-logo { width: 30px; height: 30px; top: 6px !important; right: 6px !important; padding: 2px !important; } }
+
+/* ── Diagnosis cut labels responsive (SCRUM-29) ──────── */
+.diagnosis-cut-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 640px) {
+  .diagnosis-cut-label {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+/* ── Force desktop styles during export ──────────────── */
+.diagnosis-export-mode .diagnosis-logo {
+  width: 60px !important; height: 60px !important;
+  top: 12px !important; right: 12px !important;
+  padding: 4px !important;
+}
+.diagnosis-export-mode .diagnosis-cut-label {
+  font-size: 13px !important;
+  padding: 6px 14px !important;
+}
+
+@layer utilities {
+
+  /* ── Backgrounds ─────────────────────────────────────── */
+  .bg-theme   { background-color: var(--color-bg); }
+  .bg-surface { background-color: var(--color-surface); }
+  .bg-sidebar { background-color: var(--color-sidebar); }
+
+  /* ── Text ────────────────────────────────────────────── */
+  .text-theme { color: var(--color-text); }
+  .text-muted { color: var(--color-text-muted); }
+
+  /* ── Borders ─────────────────────────────────────────── */
+  .border-theme    { border-color: var(--color-border); }
+  .divide-theme  > * + * { border-color: var(--color-border); }
+
+  /* ── Input ───────────────────────────────────────────── */
+  .input-theme {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .input-theme::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+  .input-theme:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  }
+
+  /* ── Navigation items ────────────────────────────────── */
+  .nav-item-active {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary) 14%, transparent),
+      color-mix(in srgb, var(--color-primary) 3%, transparent) 90%
+    );
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+    color: var(--color-primary);
+  }
+  .nav-item-inactive {
+    color: color-mix(in srgb, var(--color-text) 42%, transparent);
+    border: 1px solid transparent;
+    transition: all 150ms ease;
+  }
+  .nav-item-inactive:hover {
+    background: var(--color-glass-surface-hover, rgba(255,255,255,0.04));
+    color: var(--color-text);
+    border-color: var(--color-glass-border, rgba(255,255,255,0.07));
+  }
+
+  /* ── Primary button ──────────────────────────────────── */
+  .btn-primary {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary),
+      color-mix(in srgb, var(--color-secondary) 55%, var(--color-primary))
+    );
+    color: #000;
+    font-weight: 600;
+    border: none;
+    transition: filter 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px color-mix(in srgb, var(--color-primary) 32%, color-mix(in srgb, var(--color-secondary) 18%, transparent));
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+    filter: none;
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+
+  /* ── Ghost button (secundario) ───────────────────────── */
+  .btn-ghost {
+    background: var(--color-glass-surface);
+    border: 1px solid var(--color-glass-border);
+    color: var(--color-text-muted);
+    font-weight: 500;
+    transition: all 150ms ease;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-glass-surface-hover);
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    color: var(--color-text);
+  }
+  .btn-ghost:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* ── Glass ───────────────────────────────────────────── */
+  .glass {
+    background: var(--color-glass-surface);
+    border: 1px solid var(--color-glass-border);
+  }
+
+  /* ── Stat card por variante ───────────────────────────── */
+  .stat-card-primary {
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  }
+  .stat-card-amber {
+    background: rgba(245, 158, 11, 0.09);
+    border: 1px solid rgba(245, 158, 11, 0.22);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.06);
+  }
+  .stat-card-green {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.05);
+  }
+
+  /* ── Stat grid responsive ────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+  }
+
+}
+
+/* ── Responsive: stat grid ────────────────────────────── */
+@media (max-width: 560px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .stat-grid .stat-card-compact {
+    border-radius: 14px !important;
+    padding: 14px 14px 12px !important;
+  }
+  .stat-grid .stat-card-compact .stat-number {
+    font-size: 28px !important;
+  }
+  .stat-grid .stat-card-compact .stat-label {
+    font-size: 9px !important;
+  }
+  .stat-grid .stat-card-compact .stat-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .stat-grid .stat-card-compact .stat-sub {
+    font-size: 11px !important;
+    margin-top: 6px !important;
+  }
+  .stat-grid .stat-card-compact {
+    gap: 10px !important;
+  }
+  .dashboard-mobile-compact {
+    gap: 1.25rem !important;
+  }
+  .dashboard-mobile-compact h1 {
+    font-size: 22px !important;
+  }
+  .stat-grid .walkin-card {
+    grid-column: 1 / -1;
+  }
+  .stat-grid .walkin-card .walkin-card-body {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0 !important;
+  }
+  .stat-grid .walkin-card .walkin-card-divider {
+    width: 1px !important;
+    height: 28px !important;
+    margin: 0 8px !important;
+    flex-shrink: 0;
+  }
+  .stat-grid .walkin-card .walkin-card-half {
+    gap: 6px !important;
+  }
+  .stat-grid .walkin-card .walkin-card-half .stat-number {
+    font-size: 28px !important;
+  }
+}
+
+/* ── Appointment card grid ────────────────────────────── */
+.appt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .appt-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .appt-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Service card grid ────────────────────────────────── */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .service-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .service-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Barber card grid ─────────────────────────────────── */
+.barber-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 640px) {
+  .barber-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Location card grid ───────────────────────────────── */
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+@media (max-width: 900px) {
+  .location-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .location-grid { grid-template-columns: 1fr; }
+}
+
+/* ── LocationManagement: detalle de sede en celular ───── */
+/* Desktop (≥641px): idéntico al layout original */
+@media (max-width: 640px) {
+  .location-edit-btn {
+    width: 100%;
+    justify-content: center !important;
+  }
+  .location-tabs {
+    width: 100%;
+    display: flex !important;
+  }
+  .location-tabs button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Filas de barbero/servicio asignado — avatar+info arriba, acción abajo */
+@media (max-width: 480px) {
+  .location-row {
+    flex-wrap: wrap !important;
+    row-gap: 10px !important;
+    padding: 16px !important;
+  }
+  .location-row-info {
+    flex: 1 1 calc(100% - 56px) !important;
+  }
+  .location-row-action {
+    flex: 1 1 100% !important;
+    justify-content: flex-end !important;
+  }
+}
+
+/* Cards de sede en la vista lista — menos padding en pantallas angostas */
+@media (max-width: 480px) {
+  .location-card {
+    padding: 18px !important;
+  }
+}
+
+/* ── Landing: animaciones hero ─────────────────────────── */
+@keyframes bbStreak {
+  0%   { transform: translateY(-30%); opacity: 0; }
+  12%  { opacity: 0.8; }
+  88%  { opacity: 0.8; }
+  100% { transform: translateY(130vh); opacity: 0; }
+}
+@keyframes bbGlow {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.85; }
+}
+@keyframes bbBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50%      { transform: translateY(9px); opacity: 1; }
+}
+@keyframes bbFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes bbSpin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-streak, .bb-glow, .bb-bounce { animation: none !important; }
+}
+
+/* ── Landing: feature showcase (bloques alternados) ───── */
+.showcase-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+  margin-bottom: clamp(80px, 10vw, 140px);
+}
+.showcase-block:last-child { margin-bottom: 0; }
+.showcase-block--reverse { flex-wrap: wrap-reverse; }
+.showcase-text { flex: 1 1 320px; min-width: 280px; }
+.showcase-visual { flex: 1 1 320px; min-width: 280px; display: flex; justify-content: center; }
+
+/* ── Landing: grid de "Características" (6 tarjetas) ──── */
+
+/* ── Landing: grid de "Características" (6 tarjetas) ──── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+@media (max-width: 1024px) {
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .feature-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Landing: contenedores y secciones ─────────────────── */
+/* Reemplazan utilidades Tailwind de espaciado/responsive (px-*, py-*,
+   mt-*, gap-*, max-w-*, sm:/md:) que no generan CSS en este proyecto. */
+.landing-section {
+  padding: 6rem 1.5rem;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .landing-section { padding-top: 8rem; padding-bottom: 8rem; }
+}
+
+.landing-content {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.landing-content--7xl { max-width: 74rem; }
+.landing-content--5xl { max-width: 64rem; }
+.landing-content--4xl { max-width: 56rem; }
+.landing-content--2xl { max-width: 42rem; }
+
+/* ── Landing: navbar ────────────────────────────────────── */
+.landing-nav {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+.landing-nav-links {
+  display: none;
+  align-items: center;
+  gap: 2rem;
+}
+.landing-nav-actions {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+.landing-menu-toggle {
+  display: flex;
+}
+@media (min-width: 768px) {
+  .landing-nav-links { display: flex; }
+  .landing-nav-actions { display: flex; }
+  .landing-menu-toggle { display: none; }
+  .landing-mobile-menu { display: none; }
+}
+
+/* ── Landing: hero ──────────────────────────────────────── */
+.landing-hero-inner {
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+.landing-hero-ctas {
+  gap: 1rem;
+}
+.landing-hero-stats {
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .landing-hero-ctas { flex-direction: row; }
+}
+
+/* ── Landing: grids de "Planes" y "Equipo" ─────────────── */
+.plans-grid,
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+@media (min-width: 768px) {
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .plans-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.plans-grid { align-items: stretch; }
+
+/* ── Landing: footer ────────────────────────────────────── */
+.landing-footer {
+  padding: 2.5rem 1.5rem;
+  box-sizing: border-box;
+}
+.landing-footer-inner {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .landing-footer-inner { flex-direction: row; text-align: left; }
+}
+
+/* ── Carrusel circular: contenedor y título responsive ── */
+.gallery-container {
+  height: 550px;
+}
+@media (max-width: 1024px) {
+  .gallery-container { height: 450px; }
+}
+@media (max-width: 640px) {
+  .gallery-container { height: 400px; }
+}
+
+.gallery-title {
+  font-size: 1.5rem;
+}
+@media (max-width: 1024px) {
+  .gallery-title { font-size: 1.125rem; }
+}
+
+/* ── GlowCard: tarjeta plateada con resplandor que sigue el cursor ── */
+[data-glow] {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid #1e1e1e;
+  background-color: #151515;
+  background-image: radial-gradient(
+    380px 380px at calc(var(--x, -500) * 1px) calc(var(--y, -500) * 1px),
+    rgba(255, 255, 255, 0.07),
+    transparent 70%
+  );
+  background-attachment: fixed;
+  transition: border-color 300ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-glow]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    220px 220px at calc(var(--x, -500) * 1px) calc(var(--y, -500) * 1px),
+    rgba(255, 255, 255, 0.65),
+    transparent 70%
+  );
+  background-attachment: fixed;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+[data-glow]:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-4px);
+}
+[data-glow]:hover::before {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-glow] { transition: none; transform: none !important; background-image: none; }
+  [data-glow]::before { display: none; }
+}
+
+/* ── BackgroundGradientAnimation: gradientes orbitales negro/gris/plateado ── */
+.gradient-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--gradient-background-start), var(--gradient-background-end));
+}
+.gradient-bg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.gradient-bg-blobs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.gradient-blob {
+  position: absolute;
+  width: var(--gradient-size);
+  height: var(--gradient-size);
+  top: calc(50% - var(--gradient-size) / 2);
+  left: calc(50% - var(--gradient-size) / 2);
+  will-change: transform;
+  mix-blend-mode: var(--gradient-blending);
+  background-repeat: no-repeat;
+}
+.gradient-blob-first {
+  background: radial-gradient(circle at center, rgba(var(--first-color), 0.8) 0, rgba(var(--first-color), 0) 50%);
+  transform-origin: center center;
+  animation: gradientMoveVertical 30s ease infinite;
+}
+.gradient-blob-second {
+  background: radial-gradient(circle at center, rgba(var(--second-color), 0.8) 0, rgba(var(--second-color), 0) 50%);
+  transform-origin: calc(50% - 400px);
+  animation: gradientMoveInCircle 20s reverse infinite;
+}
+.gradient-blob-third {
+  background: radial-gradient(circle at center, rgba(var(--third-color), 0.8) 0, rgba(var(--third-color), 0) 50%);
+  transform-origin: calc(50% + 400px);
+  animation: gradientMoveInCircle 40s linear infinite;
+}
+.gradient-blob-fourth {
+  background: radial-gradient(circle at center, rgba(var(--fourth-color), 0.8) 0, rgba(var(--fourth-color), 0) 50%);
+  transform-origin: calc(50% - 200px);
+  opacity: 0.7;
+  animation: gradientMoveHorizontal 40s ease infinite;
+}
+.gradient-blob-fifth {
+  background: radial-gradient(circle at center, rgba(var(--fifth-color), 0.8) 0, rgba(var(--fifth-color), 0) 50%);
+  transform-origin: calc(50% - 800px) calc(50% + 800px);
+  animation: gradientMoveInCircle 20s ease infinite;
+}
+.gradient-blob-pointer {
+  width: 100%;
+  height: 100%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle at center, rgba(var(--pointer-color), 0.8) 0, rgba(var(--pointer-color), 0) 50%);
+  opacity: 0.7;
+}
+.gradient-bg-content {
+  position: relative;
+  z-index: 1;
+}
+@keyframes gradientMoveHorizontal {
+  0%   { transform: translateX(-50%) translateY(-10%); }
+  50%  { transform: translateX(50%) translateY(10%); }
+  100% { transform: translateX(-50%) translateY(-10%); }
+}
+@keyframes gradientMoveInCircle {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes gradientMoveVertical {
+  0%   { transform: translateY(-50%); }
+  50%  { transform: translateY(50%); }
+  100% { transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-blob { animation: none !important; }
+}
+
+/* ── Branding: tarjetas de tema y colores (Bug 4) ─────── */
+@media (max-width: 640px) {
+  .theme-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 480px) {
+  .brand-color-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Dashboard: nombre del cliente completo en celular (Bug 5) ── */
+/* La fila se apila: avatar + nombre arriba, hora/estado abajo —     */
+/* así el nombre tiene ancho de sobra para envolver en palabras completas */
+@media (max-width: 480px) {
+  .dashboard-appt-row {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+  }
+  .dashboard-appt-info {
+    flex: 1 1 calc(100% - 60px) !important;
+  }
+  .dashboard-appt-name {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: break-word;
+  }
+  .dashboard-appt-meta {
+    flex: 1 1 100% !important;
+    justify-content: flex-start !important;
+    padding-left: 60px !important;
+  }
+}
+
+/* ── Mi Horario (barbero): vistas Lista / Por día / Calendario ── */
+/* Desktop (≥641px / ≥768px): idénticas al layout original          */
+@media (max-width: 480px) {
+  .schedule-list-row {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+  }
+  .schedule-list-info {
+    flex: 1 1 100% !important;
+  }
+  .schedule-list-hours {
+    flex: 1 1 100% !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding-left: 108px;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 640px) {
+  .schedule-day-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 767px) {
+  .schedule-calendar-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .schedule-calendar-inner {
+    min-width: 720px;
+  }
+  .schedule-cal-count-dot { display: none !important; }
+  .schedule-cal-count-label { display: inline-flex !important; }
+}
+
+/* Etiqueta "Citas: N" — oculta en escritorio (se conserva el punto original) */
+.schedule-cal-count-label { display: none; }
+
+/* ── AppointmentManagement: botones de header sin overflow en móvil ── */
+/* Desktop (≥541px): idéntico al layout original (flexShrink: 0, fila sin wrap) */
+@media (max-width: 540px) {
+  .appt-header-actions {
+    flex-shrink: 1 !important;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  /* Separación extra entre la barra de filtros y las cards */
+  .appt-filter-bar {
+    margin-bottom: 6px;
+  }
+}
+
+/* ── Filter bar: scroll horizontal en móvil (Canceladas no se corta) ── */
+@media (max-width: 640px) {
+  .appt-filter-bar {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    scrollbar-width: none;
+    padding-bottom: 2px; /* evita que el scroll oculte la sombra inferior */
+  }
+  .appt-filter-bar::-webkit-scrollbar { display: none; }
+}
+
+/* ── AgendaRow: layout responsive en celular ─────────────────────── */
+/* Desktop (≥641px): idéntico al layout original (flex en fila, columnas fijas) */
+@media (max-width: 640px) {
+  .agenda-row {
+    flex-wrap: wrap !important;
+    row-gap: 5px !important;
+    padding: 12px 14px !important;
+    align-items: flex-start !important;
+  }
+  /* Row 1: Avatar (order:0) | Nombre+Teléfono (crece) | Hora (derecha) */
+  .agenda-row-customer {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    order: 1;
+  }
+  .agenda-row-time { order: 2; }
+  /* Row 2: Barbero · Servicio + badge cancelación (indentado) */
+  .agenda-row-middle {
+    order: 3;
+    flex: 1 1 100% !important;
+    padding-left: 58px !important;
+    box-sizing: border-box;
+  }
+  /* Row 3: StatusPill (indentado, debajo del info de barbero) */
+  .agenda-row-status {
+    order: 4;
+    flex: 1 1 100% !important;
+    padding-left: 58px !important;
+    box-sizing: border-box;
+  }
+  /* Row 4: Botones de acción (indentados) */
+  .agenda-row-actions {
+    order: 5;
+    flex: 1 1 100% !important;
+    padding-left: 58px !important;
+    box-sizing: border-box;
+    justify-content: flex-start !important;
+  }
+}
+
+/* ── Login split layout ───────────────────────────────── */
+.login-root { min-height: 100vh; display: flex; background: var(--color-bg); overflow: hidden; }
+.login-left  { width: 420px; flex-shrink: 0; }
+.login-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 32px; position: relative; }
+.login-features { display: flex; flex-direction: column; gap: 10px; margin-top: 36px; }
+@media (max-width: 860px) {
+  .login-root   { flex-direction: column; }
+  .login-left   { width: 100%; padding: 36px 32px 32px !important; border-right: none !important; border-bottom: 1px solid var(--color-glass-border); }
+  .login-features { display: none; }
+  .login-right  { padding: 40px 24px; }
+}
+@media (max-width: 480px) {
+  .login-right  { padding: 32px 20px; }
+}
+
+/* ── Sidebar tipo drawer en celular (Admin + Barbero) ─── */
+/* En desktop (≥768px) el sidebar se comporta exactamente igual que antes */
+.app-sidebar-trigger { display: none; }
+.app-sidebar-overlay { display: none; }
+.app-sidebar-close-btn { display: none; }
+
+@media (max-width: 767px) {
+  .app-sidebar-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    z-index: 50;
+  }
+  .app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .app-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .app-sidebar-close-btn {
+    display: flex;
+  }
+  .app-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+  .app-sidebar-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ── Contenedor principal: padding reducido en celular ── */
+.admin-main-content { padding: 32px 40px 40px 40px; }
+.barber-main-content { padding: 32px 36px; }
+@media (max-width: 767px) {
+  .admin-main-content,
+  .barber-main-content {
+    padding: 76px 16px 24px;
+  }
+}
+
+/* ── Badge "Pendiente" — pulso amber ─────────────────── */
+@keyframes pendingBadgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.40); opacity: 1; }
+  50%       { box-shadow: 0 0 0 5px rgba(245,158,11,0);  opacity: 0.80; }
+}
+.badge-pending-pulse {
+  animation: pendingBadgePulse 2.2s ease-in-out infinite;
+}
+
+/* ── Servicio en tarjeta de cita del barbero ─────────── */
+/* Escritorio: visible en meta row; celular: oculto      */
+.barber-appt-service-mobile  { display: none; }
+
+/* ── Fila de cita barbero: se apila en celular ────────── */
+@media (max-width: 640px) {
+  .barber-appt-row {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+    padding: 14px 16px !important;
+    align-items: flex-start !important;
+  }
+  .barber-appt-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  .barber-appt-meta {
+    flex: 1 1 100% !important;
+    padding-left: 58px !important;
+    box-sizing: border-box;
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+  }
+  /* En celular: servicio se muestra bajo el teléfono (info block), no en meta */
+  .barber-appt-service-desktop { display: none !important; }
+  .barber-appt-service-mobile  { display: block !important; }
+
+  /* Botones de acción: ancho completo, sin padding heredado del meta */
+  .barber-appt-actions {
+    display: flex !important;
+    gap: 8px !important;
+    flex: 0 0 100% !important;
+    margin-left: -58px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: calc(100% + 58px) !important;
+    max-width: calc(100% + 58px) !important;
+    box-sizing: border-box !important;
+  }
+  .barber-action-btn {
+    min-width: 0 !important;
+    flex: 1 1 0% !important;
+    height: 48px !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .barber-action-label { display: inline !important; }
+}
+.barber-action-label { display: none; }
+
+/* ── Fila de cliente: se apila en celular (Bug 1) ─────── */
+/* Desktop (≥641px): idéntica al layout original (flex en fila, columnas fijas) */
+@media (max-width: 640px) {
+  .customer-list-header { display: none !important; }
+  .customer-row {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    row-gap: 8px !important;
+    padding: 14px 16px !important;
+  }
+  .customer-row-name {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  .customer-row-email,
+  .customer-row-loyalty {
+    flex: 1 1 100% !important;
+    padding-left: 52px !important;
+    box-sizing: border-box;
+  }
+  .customer-row-action {
+    margin-left: 52px !important;
+  }
+}
+
+/* ── Demo responsive (portrait mobile) ─────────────────── */
+.demo-swipe-hint { display: none; }
+@media (max-width: 768px) {
+  .demo-swipe-hint { display: inline; }
+  .demo-slide-logo {
+    top: 12px !important;
+    left: 16px !important;
+  }
+  .demo-slide-wrapper > div:last-child {
+    padding-top: 56px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-bottom: 14px !important;
+  }
+  .demo-slide-wrapper h2 {
+    font-size: clamp(1.1rem, 5vw, 1.6rem) !important;
+    line-height: 1.2 !important;
+  }
+  .demo-slide-wrapper p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+}
