@@ -1,71 +1,73 @@
 # BarberBook SaaS
 
-Plataforma **multi-tenant** de agendamiento de citas para barberías. Cada barbería opera como un tenant aislado identificado por su subdominio: un solo despliegue de la API sirve a muchas barberías sin mezclar datos.
+**Multi-tenant** appointment scheduling platform for barbershops. Each barbershop runs as an isolated tenant identified by its subdomain: a single API deployment serves many barbershops without mixing their data.
 
-## Funcionalidades
+*Versión en español: [README.es.md](README.es.md)*
 
-- **Reservas en línea** — página pública `/book/{subdominio}` donde el cliente elige servicio, barbero y horario disponible, con validación de choques de horario.
-- **Panel de administración** — gestión de barberos y horarios, servicios, citas, reseñas, sedes y métricas (incluida una gráfica de ingresos semanales).
-- **Panel del barbero** — citas del día, completar/cancelar y registro de clientes sin cita (walk-in).
-- **Panel SuperAdmin** — alta y gestión de barberías, planes y ciclo de facturación.
-- **Branding por barbería** — temas, colores y logo propios.
-- **Programa de fidelización** — acumulación de puntos por cliente.
-- **Reseñas por QR** — página pública de calificación con estrellas.
-- **WhatsApp Business (Meta Cloud API)** — recordatorios con botones para cancelar o reprogramar.
-- **Diagnóstico de estilo con IA** (Google Gemini) — función del plan Premium.
-- **Demo interactiva** en `/demo`, con datos ficticios y sin servidor.
+## Features
+
+- **Online booking** — public page `/book/{subdomain}` where customers pick a service, a barber and an available time slot, with overlap validation.
+- **Admin dashboard** — manage barbers and schedules, services, appointments, reviews, locations and metrics (including a weekly revenue chart).
+- **Barber dashboard** — today's appointments, complete/cancel actions and walk-in customer registration.
+- **SuperAdmin dashboard** — onboard and manage barbershops, plans and billing cycles.
+- **Per-shop branding** — custom themes, colors and logo.
+- **Loyalty program** — points accumulated per customer.
+- **QR reviews** — public star-rating page.
+- **WhatsApp Business (Meta Cloud API)** — reminders with buttons to cancel or reschedule.
+- **AI style diagnosis** (Google Gemini) — a Premium plan feature.
+- **Interactive demo** at `/demo`, with mock data and no server required.
 
 ## Stack
 
-| Capa | Tecnologías |
-|------|-------------|
+| Layer | Technologies |
+|-------|--------------|
 | Backend | .NET 10, ASP.NET Core, Entity Framework Core |
-| Base de datos | SQLite (desarrollo) · PostgreSQL / Supabase (producción) |
+| Database | SQLite (development) · PostgreSQL / Supabase (production) |
 | Frontend | React 19, Vite, TypeScript, Tailwind CSS, Axios, Recharts |
-| Autenticación | JWT Bearer + refresh tokens, contraseñas con BCrypt |
+| Authentication | JWT Bearer + refresh tokens, BCrypt password hashing |
 | Tests | xUnit + `WebApplicationFactory` |
 
-## Arquitectura
+## Architecture
 
 ```
-BarberBookSaaS.Domain/          Entidades y constantes
-BarberBookSaaS.Application/     Interfaces de servicio y DTOs
-BarberBookSaaS.Infrastructure/  EF Core, servicios e integraciones externas
-BarberBookSaaS.WebApi/          API REST (controllers y middleware)
-BarberBookSaaS.Web/             Frontend React
-BarberBookSaaS.Tests/           Tests de integración
+BarberBookSaaS.Domain/          Entities and constants
+BarberBookSaaS.Application/     Service interfaces and DTOs
+BarberBookSaaS.Infrastructure/  EF Core, services and external integrations
+BarberBookSaaS.WebApi/          REST API (controllers and middleware)
+BarberBookSaaS.Web/             React frontend
+BarberBookSaaS.Tests/           Integration tests
 ```
 
-El aislamiento entre barberías funciona en tres capas:
+Tenant isolation works in three layers:
 
-1. `TenantMiddleware` obtiene el tenant del header `X-Tenant-Id` o del claim `TenantId` del JWT.
-2. Los QueryFilters globales de EF Core filtran automáticamente por tenant en todas las consultas.
-3. Un interceptor asigna el `TenantId` a las entidades nuevas antes de guardar.
+1. `TenantMiddleware` resolves the tenant from the `X-Tenant-Id` header or the JWT `TenantId` claim.
+2. Global EF Core query filters automatically scope every query to the tenant.
+3. An interceptor assigns the `TenantId` to new entities before saving.
 
-## Puesta en marcha local
+## Local setup
 
-**Requisitos:** .NET 10 SDK y Node.js 20 o superior.
+**Requirements:** .NET 10 SDK and Node.js 20 or later.
 
-### 1. Configurar el backend
+### 1. Configure the backend
 
-Copia el archivo de ejemplo y complétalo con tus valores. Este archivo está en `.gitignore` y nunca se sube al repositorio:
+Copy the example file and fill in your values. This file is in `.gitignore` and is never committed:
 
 ```bash
 cp BarberBookSaaS.WebApi/appsettings.Development.example.json BarberBookSaaS.WebApi/appsettings.Development.json
 ```
 
-Configuración mínima para desarrollo:
+Minimum development configuration:
 
-- `Jwt:Key` — una cadena aleatoria larga (por ejemplo `openssl rand -base64 48`).
-- `SuperAdmin:Email` y `SuperAdmin:Password` — la cuenta SuperAdmin se crea con estos datos al primer arranque.
-- Deja `ConnectionStrings:DefaultConnection` vacío para usar SQLite local (`barberbook.db`).
+- `Jwt:Key` — a long random string (for example `openssl rand -base64 48`).
+- `SuperAdmin:Email` and `SuperAdmin:Password` — the SuperAdmin account is created with these on first start.
+- Leave `ConnectionStrings:DefaultConnection` empty to use local SQLite (`barberbook.db`).
 
-Las integraciones (Gmail, Gemini, Meta WhatsApp) son opcionales en desarrollo.
+Integrations (Gmail, Gemini, Meta WhatsApp) are optional in development.
 
-### 2. Ejecutar
+### 2. Run
 
 ```bash
-# Backend — http://localhost:5299  (Swagger en /swagger)
+# Backend — http://localhost:5299  (Swagger at /swagger)
 cd BarberBookSaaS.WebApi
 dotnet run
 
@@ -75,7 +77,7 @@ npm install
 npm run dev
 ```
 
-El frontend apunta a `http://localhost:5299` por defecto. Para otra URL, define `VITE_API_URL`.
+The frontend points to `http://localhost:5299` by default. To use another URL, set `VITE_API_URL`.
 
 ### 3. Tests
 
@@ -83,18 +85,20 @@ El frontend apunta a `http://localhost:5299` por defecto. Para otra URL, define 
 dotnet test BarberBookSaaS.slnx
 ```
 
-## Documentación
+## Documentation
 
-| Documento | Contenido |
-|-----------|-----------|
-| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | Endpoints, bodies y respuestas |
-| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) · [`docs/PRODUCCION.md`](docs/PRODUCCION.md) | Despliegue (Railway + Vercel + Supabase) y variables de entorno |
-| [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Medidas de seguridad aplicadas |
-| [`docs/DECISIONES_DISENO.md`](docs/DECISIONES_DISENO.md) | Decisiones de arquitectura y UI |
-| [`docs/BASE_DE_DATOS.md`](docs/BASE_DE_DATOS.md) | Migraciones y modelo de datos |
-| [`docs/HISTORIAL.md`](docs/HISTORIAL.md) | Historial de fases del proyecto |
+The documents below are written in Spanish.
 
-## Autores
+| Document | Contents |
+|----------|----------|
+| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | Endpoints, request bodies and responses |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) · [`docs/PRODUCCION.md`](docs/PRODUCCION.md) | Deployment (Railway + Vercel + Supabase) and environment variables |
+| [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Security measures |
+| [`docs/DECISIONES_DISENO.md`](docs/DECISIONES_DISENO.md) | Architecture and UI decisions |
+| [`docs/BASE_DE_DATOS.md`](docs/BASE_DE_DATOS.md) | Migrations and data model |
+| [`docs/HISTORIAL.md`](docs/HISTORIAL.md) | Project phase history |
+
+## Authors
 
 - Santiago Felipe Obando Rosero
 - Juan Pablo Lopez Rodriguez
